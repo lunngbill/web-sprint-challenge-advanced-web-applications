@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react'
-import { Navigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import PT from 'prop-types'
 
 export default function Articles(props) {
   const { articles, getArticles, deleteArticle, setCurrentArticleId, } = props
+  const navigate =  useNavigate()
   // ✨ where are my props? Destructure them here
 
   const token = localStorage.getItem('token')
   if (!token) {
-    return <Navigate to={'/login'}/>
+    navigate('/login')
   }
   // ✨ implement conditional logic: if no token exists
   // we should render a Navigate to login screen (React Router v.6)
@@ -37,7 +38,7 @@ export default function Articles(props) {
                   <p>Topic: {art.topic}</p>
                 </div>
                 <div>
-                  <button disabled={false} onClick={() => setCurrentArticleId(art.article_id)}>Edit</button>
+                  <button disabled={false} onClick={() => setCurrentArticleId(art)}>Edit</button>
                   <button disabled={false} onClick={() => deleteArticle(art.article_id)}>Delete</button>
                 </div>
               </div>

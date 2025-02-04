@@ -1,90 +1,80 @@
-import React, { useEffect, useState } from 'react'
-import PT from 'prop-types'
+import React, { useEffect, useState } from 'react';
+import PT from 'prop-types';
 
-
-const initialFormValues = { title: '', text: '', topic: '' }
+const initialFormValues = { title: '', text: '', topic: '' };
 
 export default function ArticleForm(props) {
-  const [values, setValues] = useState(initialFormValues)
-  const {postArticle, updateArticle, setCurrentArticleId, currentArticle} = props
-  const resetForm = () => setValues(initialFormValues)
+    const [values, setValues] = useState(initialFormValues);
+    const { postArticle, updateArticle, setCurrentArticleId, currentArticle } = props;
 
+    const resetForm = () => setValues(initialFormValues);
 
-  // ✨ where are my props? Destructure them here
+    // Update form values when currentArticle changes
+    useEffect(() => {
+        if (currentArticle) {
+            setValues({
+                title: currentArticle.title || '',
+                text: currentArticle.text || '',
+                topic: currentArticle.topic || '',
+            });
+        } else {
+            resetForm(); // Reset for create mode
+        }
+    }, [currentArticle]);
 
+    const onChange = evt => {
+        const { id, value } = evt.target;
+        setValues({ ...values, [id]: value });
+    };
 
-  useEffect(() => {
-    if (currentArticle) {
-          setValues({
-            title: currentArticle.title,
-            text: currentArticle.text,
-            topic: currentArticle.topic,
-          })
-    } else {
-      setValues(initialFormValues)
-    }
-  }, [currentArticle])
-    // ✨ implement
-    // Every time the `currentArticle` prop changes, we should check it for truthiness:
-    // if it's truthy, we should set its title, text and topic into the corresponding
-    // values of the form. If it's not, we should reset the form back to initial values.
+    const onSubmit = evt => {
+        evt.preventDefault();
+        const action = currentArticle 
+        ? () => updateArticle({ article_id: currentArticle.article_id, article: values}) 
+        : () => postArticle(values);
 
-  const onChange = evt => {
-    const { id, value } = evt.target
-    setValues({ ...values, [id]: value })
-  }
+        action()
+            .then(() => {
+                resetForm(); // Reset the form after successful submission
+                setCurrentArticleId(null)
+            })
+            .catch(err => {
+                console.error("Submission error:", err); // Handle errors appropriately
+            });
+    };
 
-  const onSubmit = evt => {
-    evt.preventDefault()
-    const action = currentArticle ? updateArticle : postArticle;
-    
-    action(values)
-        .then(() => {
-            resetForm(); // Reset the form after successful submission
-        })
-        .catch(err => {
-            console.error("Submission error:", err); // Handle errors appropriately
-        });
-    // ✨ implement
-    // We must submit a new post or update an existing one,
-    // depending on the truthyness of the `currentArticle` prop.
-  }
+    const isDisabled = () => {
+        return !(values.title && values.text && values.topic); // Disable if any input is empty
+    };
 
-  const isDisabled = () => {
-    return !(values.title && values.text && values.topic)
-    // ✨ implement
-    // Make sure the inputs have some values
-  }
+    const cancelEdit = evt => {
+        evt.preventDefault(); // Prevent form submission
+        resetForm();
+        setCurrentArticleId(null); // Clear the current article ID
+    };
 
-  const cancelEdit = () => {
-    setValues(initialFormValues) 
-    setCurrentArticleId(null)
-  }
-
-  return (
-    // ✨ fix the JSX: make the heading display either "Edit" or "Create"
-    // and replace Function.prototype with the correct function
-    <form id="form" onSubmit={onSubmit}>
-      <h2>{currentArticle ? 'Edit Article' : 'Create Article'}</h2>
-      <input
-        maxLength={50}
-        onChange={onChange}
-        value={values.title}
-        placeholder="Enter title"
-        id="title"
-      />
-      <textarea
-        maxLength={200}
-        onChange={onChange}
-        value={values.text}
-        placeholder="Enter text"
-        id="text"
-      />
-      <select onChange={onChange} id="topic" value={values.topic}>
-        <option value="">-- Select topic --</option>
-        <option value="JavaScript">JavaScript</option>
-        <option value="React">React</option>
-        <option value="Node">Node</option>
+    return (
+        <form id="form" onSubmit={onSubmit}>
+            <h2>{currentArticle ? 'Edit Article' : 'Create Article'}</h2>
+            <input
+                maxLength={50}
+                onChange={onChange}
+                value={values.title}
+                placeholder="Enter title"
+                id="title"
+            />
+            <textarea
+                maxLength={200}
+                onChange={onChange}
+                value={values.text}
+                placeholder="Enter text"
+                id="text"
+            />
+            <select onChange={onChange} id="topic" value={values.topic}>
+                <option value="">-- Select topic --</option>
+                <option value="JavaScript">JavaScript</option>
+                <option value="React">React</option>
+                <option value="Node">Node</option>
       </select>
       <div className="button-group">
         <button disabled={isDisabled()} id="submitArticle">Submit</button>

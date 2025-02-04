@@ -74,7 +74,6 @@ export default function App() {
   }
 
   const getArticles = async () => {
-    setMessage("")
     setSpinnerOn(true)
 
     const token = localStorage.getItem('token')
@@ -95,9 +94,9 @@ export default function App() {
       const data = await res.json() 
         if (res.ok) {
           setArticles(data.articles)
-          setMessage(data.message || `Here are your articles, ${data.username}`)
+          setMessage(`Here are your articles, Foo!`)
         } else {
-          setMessage(data.message || 'Failed to fetch articles.')
+          setMessage('Failed to fetch articles.')
         }
       } catch (err) {
         setMessage('An error occurred while fetching articles.')
@@ -138,7 +137,7 @@ export default function App() {
       })
       const data = await res.json() 
       if (res.ok) {
-        setMessage("Article posted successfully!")
+        setMessage('Well done, Foo. Great article!')
         setArticles(prevArticles => [...prevArticles, data.article])
       } else {
         setMessage(data.message || 'Failed to post article')
@@ -169,7 +168,7 @@ export default function App() {
       const res = await fetch(`${articlesUrl}/${article_id}`, {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: token,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(article),  // article to update
@@ -178,9 +177,9 @@ export default function App() {
       const data = await res.json()
   
       if (res.ok) {
-        setMessage("Article updated successfully!")
+        setArticles(prevArt => prevArt.map(art => art.article_id === article_id ? {...art, ...article} : art))
+        setMessage("Nice update, Foo!")
         // Optionally, you can fetch the updated articles to reflect the change
-        getArticles()
       } else {
         setMessage(data.message || 'Failed to update article')
       }
@@ -212,11 +211,9 @@ export default function App() {
           "Content-Type": 'application/json',
         },
       })
-      const data = await res.json() 
       if (res.ok) {
-        setMessage(`Article ${article_id} was deleted, ${data.username}`)
-        setArticles(art => art.filter(article => article.id !== article_id))
-        getArticles()
+        setArticles(art => art.filter(article => article.article_id !== article_id))
+        setMessage(`Article ${article_id} was deleted, Foo!`)
       } 
     } catch (err) {
       setMessage('An error occured while deleting the article')
